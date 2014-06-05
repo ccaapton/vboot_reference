@@ -37,6 +37,7 @@ enum {
   OPT_MODE_PACK = 1000,
   OPT_MODE_REPACK,
   OPT_MODE_VERIFY,
+  OPT_MODE_UNPACK,
   OPT_ARCH,
   OPT_OLDBLOB,
   OPT_KLOADADDR,
@@ -61,6 +62,7 @@ typedef enum {
 
 static struct option long_opts[] = {
   {"pack", 1, 0,                      OPT_MODE_PACK               },
+  {"unpack", 1, 0,                    OPT_MODE_UNPACK             },
   {"repack", 1, 0,                    OPT_MODE_REPACK             },
   {"verify", 1, 0,                    OPT_MODE_VERIFY             },
   {"arch", 1, 0,                      OPT_ARCH                    },
@@ -542,6 +544,54 @@ static uint8_t* CreateKernelBlob(uint64_t kernel_body_load_address,
   return kern_blob;
 }
 
+static int Unpack(const char* outfile,
+		  uint8_t *kernel_blob,
+		  uint64_t kernel_size,
+		  uint8_t *param_data,
+		  uint64_t param_size,
+		  uint64_t kernel_body_load_address) {
+  struct linux_kernel_params *params;
+  FILE* f;
+  uint64_t i;
+  uint64_t written = 0;
+  params = VbExMalloc(g_param_size);
+  Memcpy(params, g_param_data, g_param_size);
+  Debug(" g_param_size=0x%x\n",g_param_size);
+  params->boot_flag = 0xaa55;
+  params->type_of_loader = 0x0;
+  params->n_e820_entry = 0x0;
+  uint64_t k_blob_ofs = ((params->setup_sects +1 ) << 9);
+  uint64_t k_total_size = k_blob_ofs + kernel_size ;
+
+  Debug(" k_blob_ofs=0x%x\n", k_blob_ofs);
+  Debug(" k_kernel_size=0x%x\n",kernel_size);
+  Debug(" k_total_size=0x%x\n", k_total_size);
+
+  Debug("writing %s...\n", outfile);
+  f = fopen(outfile, "wb");
+  if (!f) {
+    VbExError("Can't open output file %s\n", outfile);
+    return 1;
+  }
+  i = ((1 != fwrite(params, k_blob_ofs, 1, f)) ||
+       (1 != fwrite(kernel_blob, kernel_size, 1, f)));
+  if (i) {
+    VbExError("Can't write output file %s\n", outfile);
+    fclose(f);
+    unlink(outfile);
+    return 1;
+  }
+  written += k_blob_ofs;
+  written += kernel_size;
+
+  Debug("0x%" PRIx64 " bytes total\n", written);
+  fclose(f);
+
+  /* Success */
+  return 0;
+}
+
+
 static int Pack(const char* outfile,
                 uint8_t *kernel_blob,
                 uint64_t kernel_size,
@@ -744,6 +794,7 @@ int main(int argc, char* argv[]) {
 
     case OPT_MODE_PACK:
     case OPT_MODE_REPACK:
+    case OPT_MODE_UNPACK:
     case OPT_MODE_VERIFY:
       if (mode && (mode != i)) {
         fprintf(stderr, "Only a single mode can be specified\n");
@@ -888,6 +939,26 @@ int main(int argc, char* argv[]) {
     return Pack(filename, kernel_blob, kernel_size,
                 version, kernel_body_load_address,
                 signpriv_key);
+
+  case OPT_MODE_UNPACK:
+    if (!oldfile)
+      Fatal("Missing previously packed blob.\n");
+
+    /* Load the old blob */
+
+    kernel_blob = ReadOldBlobFromFileOrDie(oldfile, &kernel_size);
+    if (0 != Verify(kernel_blob, kernel_size, 0, 0, 0))
+      Fatal("The oldblob doesn't verify\n");
+
+    /* Take it apart */
+
+    UnpackKernelBlob(kernel_blob, kernel_size);
+    free(kernel_blob);
+    if (!oldfile)
+      Fatal("Missing previously packed blob.\n");
+
+    return Unpack(filename, g_kernel_data, g_kernel_size, 
+		  g_param_data, g_param_size, kernel_body_load_address);
 
   case OPT_MODE_REPACK:
 
