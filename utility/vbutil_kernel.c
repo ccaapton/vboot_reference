@@ -304,6 +304,7 @@ static int ImportVmlinuzFile(const char *vmlinuz_file, arch_t arch,
     Fatal("Malformed kernel\n");
   kernel32_size = kernel_size - kernel32_start;
 
+  Debug(" n_e820_entry=0x%" PRIx64 "\n", lh->n_e820_entry);
   Debug(" kernel32_start=0x%" PRIx64 "\n", kernel32_start);
   Debug(" kernel32_size=0x%" PRIx64 "\n", kernel32_size);
 
