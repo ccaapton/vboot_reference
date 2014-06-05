@@ -320,6 +320,10 @@ static int ImportVmlinuzFile(const char *vmlinuz_file, arch_t arch,
   Memcpy(&(params->setup_sects), &(lh->setup_sects),
          offsetof(struct linux_kernel_params, e820_entries)
          - offsetof(struct linux_kernel_params, setup_sects));
+  Debug(" old_boot_flag=0x%x\n", params->boot_flag);
+  Debug(" old_ramdisk_image=0x%x\n", params->ramdisk_image);
+  Debug(" old_ramdisk_size=0x%x\n", params->ramdisk_size);
+  Debug(" old_type_of_loader=0x%x\n", params->type_of_loader);
   params->boot_flag = 0;
   params->ramdisk_image = 0; /* we don't support initrd */
   params->ramdisk_size = 0;
