@@ -333,6 +333,7 @@ static int ImportVmlinuzFile(const char *vmlinuz_file, arch_t arch,
   params->type_of_loader = 0xff;
   /* We need to point to the kernel commandline arg. On disk, it will come
    *  right after the 32-bit part of the kernel. */
+  Debug(" old_cmdline_addr=0x%x\n", params->cmd_line_ptr);
   params->cmd_line_ptr = kernel_body_load_address +
     roundup(kernel32_size, CROS_ALIGN) +
     find_cmdline_start((char *)g_config_data, g_config_size);
@@ -560,6 +561,7 @@ static int Unpack(const char* outfile,
   params->boot_flag = 0xaa55;
   params->type_of_loader = 0x0;
   params->n_e820_entry = 0x0;
+  params->cmd_line_ptr = 0x0;
   uint64_t k_blob_ofs = ((params->setup_sects +1 ) << 9);
   uint64_t k_total_size = k_blob_ofs + kernel_size ;
 
