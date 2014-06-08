@@ -107,8 +107,8 @@ static int PrintHelp(char *progname) {
           "  Optional:\n"
           "    --kloadaddr <address>     Assign kernel body load address\n"
           "    --pad <number>            Verification padding size in bytes\n"
-          "    --vblockonly              Emit just the verification blob\n",
-	  "    --debug                   Showing debug information\n"
+          "    --vblockonly              Emit just the verification blob\n"
+	  "    --debug                   Showing debug information\n",
           progname);
   fprintf(stderr,
           "\nOR\n\n"
@@ -126,8 +126,8 @@ static int PrintHelp(char *progname) {
           "    --version <number>        Kernel version\n"
           "    --kloadaddr <address>     Assign kernel body load address\n"
           "    --pad <number>            Verification blob size in bytes\n"
-          "    --vblockonly              Emit just the verification blob\n",
-	  "    --debug                   Showing debug information\n"
+          "    --vblockonly              Emit just the verification blob\n"
+	  "    --debug                   Showing debug information\n",
           progname);
   fprintf(stderr,
           "\nOR\n\n"
@@ -156,7 +156,7 @@ static int PrintHelp(char *progname) {
           "\n"
           "  Optional:\n"
           "    --arch <arch>             Cpu architecture (default x86)\n"
-	  "    --debug                   Showing debug information\n"
+	  "    --debug                   Showing debug information\n",
           progname);
 
   return 1;
