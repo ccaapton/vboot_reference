@@ -108,6 +108,7 @@ static int PrintHelp(char *progname) {
           "    --kloadaddr <address>     Assign kernel body load address\n"
           "    --pad <number>            Verification padding size in bytes\n"
           "    --vblockonly              Emit just the verification blob\n",
+	  "    --debug                   Showing debug information\n"
           progname);
   fprintf(stderr,
           "\nOR\n\n"
@@ -126,6 +127,7 @@ static int PrintHelp(char *progname) {
           "    --kloadaddr <address>     Assign kernel body load address\n"
           "    --pad <number>            Verification blob size in bytes\n"
           "    --vblockonly              Emit just the verification blob\n",
+	  "    --debug                   Showing debug information\n"
           progname);
   fprintf(stderr,
           "\nOR\n\n"
@@ -141,8 +143,22 @@ static int PrintHelp(char *progname) {
           "    --pad <number>            Verification padding size in bytes\n"
           "    --minversion <number>     Minimum combined kernel key version\n"
           "                              and kernel version\n"
+	  "    --debug                   Showing debug information\n"
           "\n",
           progname);
+  fprintf(stderr,
+          "\n"
+          "Usage:  %s --extract <file> [PARAMETERS]\n"
+          "\n"
+          "  Required parameters:\n"
+          "    --vmlinuz <file>          Linux kernel bzImage file\n"
+	  "    --refvmlinuz <file>       The reference kernel bzImage file, needed for extract kernel\n"
+          "\n"
+          "  Optional:\n"
+          "    --arch <arch>             Cpu architecture (default x86)\n"
+	  "    --debug                   Showing debug information\n"
+          progname);
+
   return 1;
 }
 
