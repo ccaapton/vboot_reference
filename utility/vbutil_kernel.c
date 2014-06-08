@@ -559,27 +559,44 @@ static int extract(const char* outfile,
   FILE* f;
   uint64_t i;
   uint64_t written = 0;
+
   params = VbExMalloc(g_param_size);
   Memcpy(params, g_param_data, g_param_size);
-  Debug(" g_param_size=0x%x\n",g_param_size);
+  Debug("g_param_size=0x%x\n",g_param_size);
   params->boot_flag = 0xaa55;
   params->type_of_loader = 0x0;
   params->n_e820_entry = 0x0;
   params->cmd_line_ptr = 0x0;
+
+
+  uint64_t refsize;
+  struct linux_kernel_params *lhref = NULL;
+  uint8_t *refbuf = ReadFile(refvmlinuz_file,&refsize);
+  Debug("ref_vmlinuz_size=0x%x\n", refsize);
+  lhref = (struct linux_kernel_params *) refbuf;
+  if (lhref->setup_sects > params->setup_sects){  //Need to enlarge the setup_sects if reference is larger.
+    params->setup_sects = lhref->setup_sects;
+  }
+  Debug("setup_sects=0x%x\n", params->setup_sects);
+
+  uint64_t k_bios_ofs = offsetof(struct linux_kernel_params, e820_entries);
   uint64_t k_blob_ofs = ((params->setup_sects +1 ) << 9);
   uint64_t k_total_size = k_blob_ofs + kernel_size ;
 
-  Debug(" k_blob_ofs=0x%x\n", k_blob_ofs);
-  Debug(" k_kernel_size=0x%x\n",kernel_size);
-  Debug(" k_total_size=0x%x\n", k_total_size);
+  Debug("k_bios_ofs=0x%x\n", k_bios_ofs);
+  Debug("k_blob_ofs=0x%x\n", k_blob_ofs);
+  Debug("k_kernel_size=0x%x\n",kernel_size);
+  Debug("k_total_size=0x%x\n", k_total_size);
 
   Debug("writing %s...\n", outfile);
+
   f = fopen(outfile, "wb");
   if (!f) {
     VbExError("Can't open output file %s\n", outfile);
     return 1;
   }
-  i = ((1 != fwrite(params, k_blob_ofs, 1, f)) ||
+  i = ((1 != fwrite(params, k_bios_ofs, 1, f)) ||
+       (1 != fwrite(refbuf + k_bios_ofs, k_blob_ofs - k_bios_ofs, 1, f)) ||
        (1 != fwrite(kernel_blob, kernel_size, 1, f)));
   if (i) {
     VbExError("Can't write output file %s\n", outfile);
@@ -870,6 +887,7 @@ int main(int argc, char* argv[]) {
 
     case OPT_REFVMLINUZ:
       refvmlinuz_file = optarg;
+      break;
 
     case OPT_VERSION:
       version_str = optarg;
