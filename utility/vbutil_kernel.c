@@ -598,7 +598,7 @@ static int extract(const char* outfile,
   }
   Debug("setup_sects=0x%x\n", params->setup_sects);
 
-  uint64_t k_bios_ofs = offsetof(struct linux_kernel_params, e820_entries);
+  uint64_t k_bios_ofs = offsetof(struct linux_kernel_params, cmdline_size);
   uint64_t k_blob_ofs = ((params->setup_sects +1 ) << 9);
   uint64_t k_total_size = k_blob_ofs + kernel_size ;
 
