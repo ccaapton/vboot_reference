@@ -37,7 +37,7 @@ enum {
   OPT_MODE_PACK = 1000,
   OPT_MODE_REPACK,
   OPT_MODE_VERIFY,
-  OPT_MODE_UNPACK,
+  OPT_MODE_EXTRACT,
   OPT_ARCH,
   OPT_OLDBLOB,
   OPT_KLOADADDR,
@@ -63,7 +63,7 @@ typedef enum {
 
 static struct option long_opts[] = {
   {"pack", 1, 0,                      OPT_MODE_PACK               },
-  {"unpack", 1, 0,                    OPT_MODE_UNPACK             },
+  {"extract", 1, 0,                   OPT_MODE_EXTRACT             },
   {"repack", 1, 0,                    OPT_MODE_REPACK             },
   {"verify", 1, 0,                    OPT_MODE_VERIFY             },
   {"arch", 1, 0,                      OPT_ARCH                    },
@@ -548,7 +548,7 @@ static uint8_t* CreateKernelBlob(uint64_t kernel_body_load_address,
   return kern_blob;
 }
 
-static int Unpack(const char* outfile,
+static int extract(const char* outfile,
 		  const char* refvmlinuz_file,
 		  uint8_t *kernel_blob,
 		  uint64_t kernel_size,
@@ -801,7 +801,7 @@ int main(int argc, char* argv[]) {
 
     case OPT_MODE_PACK:
     case OPT_MODE_REPACK:
-    case OPT_MODE_UNPACK:
+    case OPT_MODE_EXTRACT:
     case OPT_MODE_VERIFY:
       if (mode && (mode != i)) {
         fprintf(stderr, "Only a single mode can be specified\n");
@@ -950,7 +950,7 @@ int main(int argc, char* argv[]) {
                 version, kernel_body_load_address,
                 signpriv_key);
 
-  case OPT_MODE_UNPACK:
+  case OPT_MODE_EXTRACT:
     if (!oldfile)
       Fatal("Missing previously packed blob.\n");
     if (!refvmlinuz_file)
@@ -969,7 +969,7 @@ int main(int argc, char* argv[]) {
     if (!oldfile)
       Fatal("Missing previously packed blob.\n");
 
-    return Unpack(filename, refvmlinuz_file, g_kernel_data, g_kernel_size, 
+    return extract(filename, refvmlinuz_file, g_kernel_data, g_kernel_size, 
 		  g_param_data, g_param_size, kernel_body_load_address);
 
   case OPT_MODE_REPACK:
