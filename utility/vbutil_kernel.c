@@ -588,6 +588,9 @@ static int extract(const char* outfile,
   uint64_t refsize;
   struct linux_kernel_params *lhref = NULL;
   uint8_t *refbuf = ReadFile(refvmlinuz_file,&refsize);
+  if (!refbuf)
+    Fatal("Error reading reference kernel image.\n");
+
   Debug("ref_vmlinuz_size=0x%x\n", refsize);
   lhref = (struct linux_kernel_params *) refbuf;
   if (lhref->setup_sects > params->setup_sects){  //Need to enlarge the setup_sects if reference is larger.
