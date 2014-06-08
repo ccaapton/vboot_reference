@@ -46,6 +46,7 @@ enum {
   OPT_SIGNPRIVATE,
   OPT_VERSION,
   OPT_VMLINUZ,
+  OPT_REFVMLINUZ,
   OPT_BOOTLOADER,
   OPT_CONFIG,
   OPT_VBLOCKONLY,
@@ -74,6 +75,7 @@ static struct option long_opts[] = {
   {"version", 1, 0,                   OPT_VERSION                 },
   {"minversion", 1, 0,                OPT_MINVERSION              },
   {"vmlinuz", 1, 0,                   OPT_VMLINUZ                 },
+  {"refvmlinuz", 1, 0,                OPT_REFVMLINUZ                 },
   {"bootloader", 1, 0,                OPT_BOOTLOADER              },
   {"config", 1, 0,                    OPT_CONFIG                  },
   {"vblockonly", 0, 0,                OPT_VBLOCKONLY              },
@@ -327,6 +329,7 @@ static int ImportVmlinuzFile(const char *vmlinuz_file, arch_t arch,
   Debug(" old_ramdisk_image=0x%x\n", params->ramdisk_image);
   Debug(" old_ramdisk_size=0x%x\n", params->ramdisk_size);
   Debug(" old_type_of_loader=0x%x\n", params->type_of_loader);
+  Debug(" old_cmdline_size=0x%x\n", params->cmdline_size);
   params->boot_flag = 0;
   params->ramdisk_image = 0; /* we don't support initrd */
   params->ramdisk_size = 0;
@@ -546,6 +549,7 @@ static uint8_t* CreateKernelBlob(uint64_t kernel_body_load_address,
 }
 
 static int Unpack(const char* outfile,
+		  const char* refvmlinuz_file,
 		  uint8_t *kernel_blob,
 		  uint64_t kernel_size,
 		  uint8_t *param_data,
@@ -760,6 +764,7 @@ int main(int argc, char* argv[]) {
   char* version_str = NULL;
   int version = -1;
   char* vmlinuz_file = NULL;
+  char* refvmlinuz_file = NULL;
   char* bootloader_file = NULL;
   char* config_file = NULL;
   arch_t arch = ARCH_X86;
@@ -863,6 +868,9 @@ int main(int argc, char* argv[]) {
       opt_vblockonly = 1;
       break;
 
+    case OPT_REFVMLINUZ:
+      refvmlinuz_file = optarg;
+
     case OPT_VERSION:
       version_str = optarg;
       version = strtoul(optarg, &e, 0);
@@ -945,6 +953,8 @@ int main(int argc, char* argv[]) {
   case OPT_MODE_UNPACK:
     if (!oldfile)
       Fatal("Missing previously packed blob.\n");
+    if (!refvmlinuz_file)
+      Fatal("Missing reference blob.\n");
 
     /* Load the old blob */
 
@@ -959,7 +969,7 @@ int main(int argc, char* argv[]) {
     if (!oldfile)
       Fatal("Missing previously packed blob.\n");
 
-    return Unpack(filename, g_kernel_data, g_kernel_size, 
+    return Unpack(filename, refvmlinuz_file, g_kernel_data, g_kernel_size, 
 		  g_param_data, g_param_size, kernel_body_load_address);
 
   case OPT_MODE_REPACK:
