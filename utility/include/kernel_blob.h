@@ -57,7 +57,10 @@ struct linux_kernel_params
   uint32_t kernel_alignment;            // 230
   uint8_t  relocatable_kernel;          // 234
   uint8_t  min_alignment;               // 235
-  uint8_t  pad6[0x2d0 - 0x236];
+  uint8_t  xloadflags[0x238-0x236];     // 236
+  uint32_t cmdline_size;                // 238
+
+  uint8_t  pad6[0x2d0 - 0x23c];
   struct   linux_kernel_e820entry e820_entries[E820_ENTRY_MAX]; // 2d0 - cd0
 } __attribute__ ((packed));
 
